@@ -1,0 +1,17 @@
+#!/bin/bash
+# Launcher: opens the All Google MCP setup overlay (local browser UI).
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+RES="$HERE/../Resources"
+PROJ="$RES/all-google-mcp"
+export PATH="/opt/homebrew/bin:/usr/local/bin:${HOME}/.local/bin:${PATH}"
+cd "$PROJ"
+# Prefer bundled venv when present so Finder sees one long-lived Python process (not uv as parent).
+if [[ -x "$PROJ/.venv/bin/python" ]]; then
+  exec "$PROJ/.venv/bin/python" -m all_google_mcp setup
+fi
+if command -v uv >/dev/null 2>&1; then
+  exec uv run python -m all_google_mcp setup
+fi
+echo "All Google MCP: install uv (https://docs.astral.sh/uv/) or run: cd '$PROJ' && uv sync" >&2
+exit 1

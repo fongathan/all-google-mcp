@@ -1,0 +1,16 @@
+#!/bin/bash
+# Cursor MCP (stdio): runs the unified FastMCP server — use this path in mcp.json "command".
+set -euo pipefail
+HERE="$(cd "$(dirname "$0")" && pwd)"
+RES="$HERE/../Resources"
+PROJ="$RES/all-google-mcp"
+export PATH="/opt/homebrew/bin:/usr/local/bin:${HOME}/.local/bin:${PATH}"
+cd "$PROJ"
+if [[ -x "$PROJ/.venv/bin/python" ]]; then
+  exec "$PROJ/.venv/bin/python" -m all_google_mcp
+fi
+if command -v uv >/dev/null 2>&1; then
+  exec uv run python -m all_google_mcp
+fi
+echo "All Google MCP: install uv (https://docs.astral.sh/uv/) or run: cd '$PROJ' && uv sync" >&2
+exit 1

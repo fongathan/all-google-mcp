@@ -1,0 +1,58 @@
+# All Google MCP
+
+Python [FastMCP](https://github.com/jlowin/fastmcp) server that talks to **Google Drive, Docs, Sheets, Slides, and Gmail** through the official Google APIs—no subprocess bridge.
+
+## Quick start
+
+1. Open **All Google MCP.app** (or run `uv run python -m all_google_mcp setup`) and follow the overlay.
+2. In **Cursor → MCP**, set **command** to the **stdio launcher** inside the app bundle (not the GUI launcher):
+   - `/Applications/All Google MCP.app/Contents/MacOS/AllGoogleMCPStdio`
+   - or `~/Applications/All Google MCP.app/Contents/MacOS/AllGoogleMCPStdio` if you only installed under your home folder.
+3. Leave **`args` empty** (or omit). Restart Cursor.
+
+The GUI entry point **`AllGoogleMCP`** opens the setup overlay; **`AllGoogleMCPStdio`** runs the MCP server on stdio for Cursor.
+
+## CLI
+
+- MCP (stdio): `uv run python -m all_google_mcp`
+- OAuth sign-in: `uv run python -m all_google_mcp auth`
+- Setup overlay: `uv run python -m all_google_mcp setup`
+
+## Config
+
+- Default folder: `~/Library/Application Support/All Google MCP/`
+- Place Google OAuth **Desktop** client `credentials.json` there, or set `ALL_GOOGLE_MCP_CREDENTIALS` to its path.
+- Tokens are stored as `token.json` in the same folder (override with `ALL_GOOGLE_MCP_TOKEN`).
+- Override the whole config directory with `ALL_GOOGLE_MCP_HOME`.
+
+## macOS app bundle
+
+From the parent folder (`AI Tools`), run:
+
+```bash
+./build-all-google-mcp-app.sh
+```
+
+Then open **All Google MCP.app**. The bundle uses the **same `AppIcon.icns` and in-app logo** as **Google MCP.app** (Dock icon + setup wizard header / favicon). The build script copies `AppIcon.icns` from the installed Google MCP app when needed, and copies `mickey-icon.png` to `all_google_mcp/app_icon.png` if that file is missing.
+
+The setup wizard (`python -m all_google_mcp setup`) is styled with a **Midnight Ops**–inspired dark shell: grid background, violet/cyan glows, gradient headline, and pill buttons. The bundle copies this project into `Contents/Resources/all-google-mcp/` and runs `uv sync`.
+
+## Tools (summary)
+
+- **Health:** `all_google_health`
+- **Drive:** `drive_list_files`, `drive_get_file_metadata`, `drive_create_google_file`
+- **Sheets:** `sheets_get_values`, `sheets_update_values`, `sheets_append_rows`
+- **Docs:** `docs_get_document`, `docs_insert_text`
+- **Slides:** `slides_get_presentation`
+- **Gmail:** `gmail_send_email`, `gmail_search_messages`, `gmail_get_message`
+
+## Project inventory sheet (optional)
+
+The **Disney Employee Efficiency** repo keeps `project_inventory_full.csv`. To push it to the team Sheet with formatting (same OAuth as this MCP):
+
+```bash
+cd "/path/to/AI Tools/all-google-mcp"
+uv run python scripts/sync_project_inventory_sheet.py
+```
+
+Override CSV path: `PROJECT_INVENTORY_CSV=/path/to/project_inventory_full.csv`. Override spreadsheet: `PROJECT_INVENTORY_SPREADSHEET_ID=...`.

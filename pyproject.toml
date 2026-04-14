@@ -1,0 +1,26 @@
+[project]
+name = "all-google-mcp"
+version = "1.0.0"
+description = "Unified Google MCP: Drive, Docs, Sheets, Slides, Gmail via official Google APIs (Python FastMCP)."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastmcp>=2.2.0",
+  "google-api-python-client>=2.160.0",
+  "google-auth-httplib2>=0.2.0",
+  "google-auth-oauthlib>=1.2.0",
+]
+
+[project.scripts]
+all-google-mcp = "all_google_mcp.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["all_google_mcp"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"all_google_mcp/setup_overlay.html" = "all_google_mcp/setup_overlay.html"
+"all_google_mcp/app_icon.png" = "all_google_mcp/app_icon.png"
