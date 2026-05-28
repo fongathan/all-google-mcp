@@ -2,7 +2,20 @@
 
 Python [FastMCP](https://github.com/jlowin/fastmcp) server that talks to **Google Drive, Docs, Sheets, Slides, and Gmail** through the official Google APIs—no subprocess bridge.
 
-## Quick start
+## Install (macOS, team build)
+
+Download the latest app (**no GitHub sign-in required**):
+
+**[Releases → All-Google-MCP-mac.zip](https://github.com/fongathan/all-google-mcp/releases/latest)**
+
+1. Unzip and drag **All Google MCP.app** into **Applications**.
+2. **Control-click → Open** on first launch (unsigned app).
+3. Open the app and follow the setup wizard: **Sign in with Google** → **Add to Cursor**.
+4. Quit Cursor completely (**⌘Q**), then reopen.
+
+You do **not** need your own Google Cloud project for the team build—the publisher’s OAuth app is bundled. Each person still signs in with **their own** Google account; sessions are stored as `token.json` on that Mac only.
+
+## Quick start (manual / developers)
 
 1. Open **All Google MCP.app** (or run `uv run python -m all_google_mcp setup`) and follow the overlay.
 2. In **Cursor → MCP**, set **command** to the **stdio launcher** inside the app bundle (not the GUI launcher):
@@ -21,9 +34,11 @@ The GUI entry point **`AllGoogleMCP`** opens the setup overlay; **`AllGoogleMCPS
 ## Config
 
 - Default folder: `~/Library/Application Support/All Google MCP/`
-- Place Google OAuth **Desktop** client `credentials.json` there, or set `ALL_GOOGLE_MCP_CREDENTIALS` to its path.
+- Team builds copy bundled OAuth into `credentials.json` on first run. Advanced users can supply their own Desktop client (`credentials.json.example` shows the shape) or set `ALL_GOOGLE_MCP_CREDENTIALS`.
 - Tokens are stored as `token.json` in the same folder (override with `ALL_GOOGLE_MCP_TOKEN`).
 - Override the whole config directory with `ALL_GOOGLE_MCP_HOME`.
+
+**Publisher:** add `all_google_mcp/bundled_credentials.json` (never commit it—see `.gitignore`) before building the `.app`.
 
 ## macOS app bundle
 
