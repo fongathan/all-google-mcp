@@ -25,6 +25,7 @@ def run_setup() -> None:
 
 def main() -> None:
     if len(sys.argv) < 2:
+        # Default: stdio MCP for Cursor / Claude Desktop.
         run_mcp()
         return
     cmd = sys.argv[1].lower()
@@ -35,13 +36,17 @@ def main() -> None:
     elif cmd in ("--help", "-h", "help"):
         print(
             "Usage:\n"
-            "  python -m all_google_mcp              # MCP server (stdio)\n"
+            "  python -m all_google_mcp              # MCP server (stdio) — default when no subcommand\n"
             "  python -m all_google_mcp auth         # Browser OAuth\n"
             "  python -m all_google_mcp setup        # Setup overlay UI\n",
             flush=True,
         )
     else:
-        print(f"Unknown command: {sys.argv[1]!r}. Try: auth | setup", file=sys.stderr, flush=True)
+        print(
+            f"Unknown command: {sys.argv[1]!r}. Use: auth | setup | --help",
+            file=sys.stderr,
+            flush=True,
+        )
         sys.exit(2)
 
 

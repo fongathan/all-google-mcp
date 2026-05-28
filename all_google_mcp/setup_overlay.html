@@ -113,6 +113,43 @@
       justify-content: center;
     }
     .panel ol.compact li { margin: 0.35rem 0; }
+    .panel.panel-done { border-color: rgba(74, 222, 128, 0.35); }
+    .panel.panel-done::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+    .step-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 0.35rem;
+    }
+    .intro-callout {
+      margin-bottom: 1rem;
+      padding: 0.9rem 1rem;
+      border-radius: var(--radius-sm);
+      border: 1px solid rgba(34, 211, 238, 0.28);
+      background: rgba(34, 211, 238, 0.08);
+      font-size: 0.88rem;
+      color: var(--text);
+      line-height: 1.5;
+    }
+    details.advanced {
+      margin-top: 0.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: rgba(0, 0, 0, 0.15);
+    }
+    details.advanced summary {
+      cursor: pointer;
+      padding: 0.85rem 1rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--muted);
+      list-style: none;
+    }
+    details.advanced summary::-webkit-details-marker { display: none; }
+    details.advanced .advanced-body { padding: 0 1rem 1rem; }
     .pill {
       display: inline-flex;
       align-items: center;
@@ -283,116 +320,148 @@
       <div class="masthead-centered">
         <div class="title-block title-block--hero">
           <h1>All Google MCP</h1>
-          <p>Connect Drive, Docs, Sheets, Slides &amp; Gmail — local setup wizard.</p>
+          <p>Connect Drive, Docs, Sheets, Slides &amp; Gmail in Cursor — follow the steps below.</p>
         </div>
         <img src="/app_icon.png" alt="" class="brand-logo--hero" width="96" height="96" decoding="async" fetchpriority="high"/>
         <div class="status-line status-line--center" id="statusLine"></div>
       </div>
     </header>
 
+    <div class="intro-callout">
+      <strong>Google Cloud is already set up for you.</strong> You do not need console.cloud.google.com unless you are building your own OAuth app (see Advanced at the bottom).
+    </div>
+
     <div id="cursorGlobalBanner" class="cursor-banner success" style="display:none" role="status" aria-live="polite"></div>
     <div id="cursorInstallErr" class="cursor-banner err" style="display:none" role="alert"></div>
 
-    <div class="panel">
-      <h2>Step 1 — Google Cloud project</h2>
-      <p>Select a project, use each <strong>Open</strong> link → <strong>Enable</strong> in Cloud Console, then flip the switch to mark done (local checklist only—we don’t read your project).</p>
-      <div class="api-list" id="apiList">
-        <div class="api-row" data-api="drive">
-          <button type="button" class="btn btn-ghost open-btn" data-open="drive">Open Drive API</button>
-          <div class="toggle-line">
-            <label>
-              <input type="checkbox" class="api-toggle" data-api="drive" aria-label="Drive API enabled"/>
-              <span class="switch-pill"></span>
-              <span>I enabled it</span>
-            </label>
-            <span class="flag-on" title="Marked enabled">✓</span>
-          </div>
-        </div>
-        <div class="api-row" data-api="sheets">
-          <button type="button" class="btn btn-ghost open-btn" data-open="sheets">Open Sheets API</button>
-          <div class="toggle-line">
-            <label>
-              <input type="checkbox" class="api-toggle" data-api="sheets" aria-label="Sheets API enabled"/>
-              <span class="switch-pill"></span>
-              <span>I enabled it</span>
-            </label>
-            <span class="flag-on">✓</span>
-          </div>
-        </div>
-        <div class="api-row" data-api="docs">
-          <button type="button" class="btn btn-ghost open-btn" data-open="docs">Open Docs API</button>
-          <div class="toggle-line">
-            <label>
-              <input type="checkbox" class="api-toggle" data-api="docs" aria-label="Docs API enabled"/>
-              <span class="switch-pill"></span>
-              <span>I enabled it</span>
-            </label>
-            <span class="flag-on">✓</span>
-          </div>
-        </div>
-        <div class="api-row" data-api="slides">
-          <button type="button" class="btn btn-ghost open-btn" data-open="slides">Open Slides API</button>
-          <div class="toggle-line">
-            <label>
-              <input type="checkbox" class="api-toggle" data-api="slides" aria-label="Slides API enabled"/>
-              <span class="switch-pill"></span>
-              <span>I enabled it</span>
-            </label>
-            <span class="flag-on">✓</span>
-          </div>
-        </div>
-        <div class="api-row" data-api="gmail">
-          <button type="button" class="btn btn-ghost open-btn" data-open="gmail">Open Gmail API</button>
-          <div class="toggle-line">
-            <label>
-              <input type="checkbox" class="api-toggle" data-api="gmail" aria-label="Gmail API enabled"/>
-              <span class="switch-pill"></span>
-              <span>I enabled it</span>
-            </label>
-            <span class="flag-on">✓</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Step 2 — OAuth consent &amp; client</h2>
+    <div class="panel" id="panelStep1">
+      <span class="step-badge">Step 1</span>
+      <h2>Install the app</h2>
       <ol class="spaced compact">
-        <li><strong>OAuth consent screen:</strong> Name the app <strong>All Google MCP</strong>. Fill in your email for <strong>Developer contact</strong> (and any other emails Google asks for), then click <strong>Save</strong> and continue the wizard.</li>
-        <li><strong>Credentials</strong> → <strong>Create credentials</strong> → <strong>OAuth client ID</strong> → Application type <strong>Desktop app</strong> → Create → <strong>Download JSON</strong>.</li>
-        <li>Then move or rename the downloaded file to <strong>credentials.json</strong> so it exists <em>exactly</em> at this path (create folders if needed):
-          <div class="pathbox js-cred-path"></div>
-        </li>
+        <li>Unzip <strong>All Google MCP.zip</strong> if you have not already.</li>
+        <li>Drag <strong>All Google MCP.app</strong> into <strong>Applications</strong> (recommended).</li>
+        <li>Open <strong>All Google MCP</strong> from Applications. This setup page opens in your browser.</li>
       </ol>
-      <div class="row">
-        <button type="button" class="btn btn-ghost" id="btnConsent">Open OAuth consent</button>
-        <button type="button" class="btn btn-ghost" id="btnCreds">Open Credentials</button>
-      </div>
+      <p class="step-note">You can also run the app from the unzipped folder; using Applications keeps paths stable for Cursor.</p>
     </div>
 
-    <div class="panel">
-      <h2>Step 3 — credentials.json</h2>
-      <p>Move or copy the Desktop OAuth JSON from <strong>Downloads</strong> so <strong>credentials.json</strong> lives at:</p>
-      <div class="pathbox js-cred-path" id="credPath"></div>
-      <p class="step-note">After this, Step 4 will create <strong>token.json</strong> next to it when you sign in — keep both files private. (Advanced: <code>ALL_GOOGLE_MCP_CREDENTIALS</code> can point elsewhere.)</p>
-      <div class="row">
-        <button type="button" class="btn btn-ghost" id="btnOpenFolder">Reveal in Finder</button>
-        <button type="button" class="btn btn-ghost" id="btnCopyCredPath">Copy path</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>Step 4 — Sign in with Google</h2>
-      <p>This launches the same OAuth flow the CLI uses. Approve all scopes. Tokens are saved next to credentials as <strong>token.json</strong>.</p>
+    <div class="panel" id="panelStep2">
+      <span class="step-badge">Step 2</span>
+      <h2>Sign in with Google</h2>
+      <ol class="spaced compact">
+        <li>Click <strong>Sign in with Google</strong> below.</li>
+        <li>Choose the Google account you want Cursor to use (work or personal).</li>
+        <li>Click <strong>Allow</strong> for all requested permissions (Drive, Docs, Sheets, Slides, Gmail).</li>
+      </ol>
+      <p class="step-note" id="credNote">Your personal session is saved as <strong>token.json</strong> on this Mac only — never share that file.</p>
       <div class="row">
         <button type="button" class="btn btn-primary" id="btnOAuth">Sign in with Google</button>
-        <button type="button" class="btn btn-danger" id="btnRevokeToken">Revoke saved session</button>
+        <button type="button" class="btn btn-danger" id="btnRevokeToken">Sign out on this Mac</button>
       </div>
       <div class="callout-revoke">
-        <strong>What revoking does:</strong> Deletes <code>token.json</code> on this Mac. Use <strong>Sign in with Google</strong> again to reconnect. (This is not the same as removing app access under your Google Account’s security settings.)
+        <strong>Sign out on this Mac</strong> deletes <code>token.json</code> here. Use <strong>Sign in with Google</strong> again to reconnect.
       </div>
       <p id="oauthErr"></p>
     </div>
+
+    <div class="panel" id="panelStep3">
+      <span class="step-badge">Step 3</span>
+      <h2>Connect Cursor</h2>
+      <ol class="spaced compact">
+        <li>After you are signed in, click <strong>Add to Cursor</strong> below (updates <code>~/.cursor/mcp.json</code>).</li>
+        <li><strong>Quit Cursor completely</strong> (<kbd>⌘Q</kbd>) — not just close the window.</li>
+        <li>Reopen Cursor. In <strong>Settings → MCP</strong>, confirm <strong>all-google-mcp</strong> is enabled.</li>
+        <li>Start a new Agent chat and try a Google task (e.g. list a Drive file or read a Doc).</li>
+      </ol>
+      <p class="step-note" id="stdioNote"></p>
+      <div class="row">
+        <button type="button" class="btn btn-primary" id="btnInstallCursor">Add to Cursor</button>
+        <button type="button" class="btn btn-ghost" id="btnCopyMcpSnippet">Copy MCP JSON snippet</button>
+      </div>
+    </div>
+
+    <details class="advanced">
+      <summary>Advanced — use your own Google Cloud project</summary>
+      <div class="advanced-body">
+        <div class="panel" style="margin-bottom:0.75rem">
+          <h2>Enable APIs (your project)</h2>
+          <p>In <a href="https://console.cloud.google.com/" target="_blank" rel="noopener">Google Cloud Console</a>, enable each API, then mark done (local checklist only).</p>
+          <div class="api-list" id="apiList">
+            <div class="api-row" data-api="drive">
+              <button type="button" class="btn btn-ghost open-btn" data-open="drive">Open Drive API</button>
+              <div class="toggle-line">
+                <label>
+                  <input type="checkbox" class="api-toggle" data-api="drive" aria-label="Drive API enabled"/>
+                  <span class="switch-pill"></span>
+                  <span>I enabled it</span>
+                </label>
+                <span class="flag-on" title="Marked enabled">✓</span>
+              </div>
+            </div>
+            <div class="api-row" data-api="sheets">
+              <button type="button" class="btn btn-ghost open-btn" data-open="sheets">Open Sheets API</button>
+              <div class="toggle-line">
+                <label>
+                  <input type="checkbox" class="api-toggle" data-api="sheets" aria-label="Sheets API enabled"/>
+                  <span class="switch-pill"></span>
+                  <span>I enabled it</span>
+                </label>
+                <span class="flag-on">✓</span>
+              </div>
+            </div>
+            <div class="api-row" data-api="docs">
+              <button type="button" class="btn btn-ghost open-btn" data-open="docs">Open Docs API</button>
+              <div class="toggle-line">
+                <label>
+                  <input type="checkbox" class="api-toggle" data-api="docs" aria-label="Docs API enabled"/>
+                  <span class="switch-pill"></span>
+                  <span>I enabled it</span>
+                </label>
+                <span class="flag-on">✓</span>
+              </div>
+            </div>
+            <div class="api-row" data-api="slides">
+              <button type="button" class="btn btn-ghost open-btn" data-open="slides">Open Slides API</button>
+              <div class="toggle-line">
+                <label>
+                  <input type="checkbox" class="api-toggle" data-api="slides" aria-label="Slides API enabled"/>
+                  <span class="switch-pill"></span>
+                  <span>I enabled it</span>
+                </label>
+                <span class="flag-on">✓</span>
+              </div>
+            </div>
+            <div class="api-row" data-api="gmail">
+              <button type="button" class="btn btn-ghost open-btn" data-open="gmail">Open Gmail API</button>
+              <div class="toggle-line">
+                <label>
+                  <input type="checkbox" class="api-toggle" data-api="gmail" aria-label="Gmail API enabled"/>
+                  <span class="switch-pill"></span>
+                  <span>I enabled it</span>
+                </label>
+                <span class="flag-on">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <h2>OAuth consent &amp; Desktop client</h2>
+          <ol class="spaced compact">
+            <li><strong>OAuth consent screen</strong> — name the app, add developer contact email, save.</li>
+            <li><strong>Credentials</strong> → <strong>Create credentials</strong> → <strong>OAuth client ID</strong> → <strong>Desktop app</strong> → download JSON.</li>
+            <li>Save as <strong>credentials.json</strong> at:
+              <div class="pathbox js-cred-path"></div>
+            </li>
+          </ol>
+          <div class="row">
+            <button type="button" class="btn btn-ghost" id="btnConsent">Open OAuth consent</button>
+            <button type="button" class="btn btn-ghost" id="btnCreds">Open Credentials</button>
+            <button type="button" class="btn btn-ghost" id="btnOpenFolder">Reveal support folder</button>
+            <button type="button" class="btn btn-ghost" id="btnCopyCredPath">Copy credentials path</button>
+          </div>
+        </div>
+      </div>
+    </details>
 
     <footer class="nav-foot">
       <span class="hint">Local only — this page is served on 127.0.0.1. No data leaves your machine except to Google during sign-in.</span>
@@ -424,12 +493,33 @@
         row.classList.toggle('done', !!on);
       });
     }
+    function applyStepPanels(s) {
+      const p1 = document.getElementById('panelStep1');
+      const p2 = document.getElementById('panelStep2');
+      const p3 = document.getElementById('panelStep3');
+      if (p1) p1.classList.add('panel-done');
+      if (p2) p2.classList.toggle('panel-done', !!s.tokenPresent);
+      if (p3) p3.classList.toggle('panel-done', !!s.cursorMcpConfigured);
+      const btnCursor = document.getElementById('btnInstallCursor');
+      if (btnCursor) btnCursor.disabled = !s.tokenPresent;
+      const note = document.getElementById('credNote');
+      if (note && s.credentialsAutoInstalled) {
+        note.textContent = 'App credentials were installed automatically. Your sign-in is saved as token.json on this Mac only.';
+      }
+      const stdio = document.getElementById('stdioNote');
+      if (stdio && s.bundledStdioPath) {
+        stdio.textContent = 'Cursor will use: ' + s.bundledStdioPath;
+      }
+    }
+
     function renderStatus(s) {
       const el = document.getElementById('statusLine');
       el.innerHTML = '';
       const c = document.createElement('span');
       c.className = 'pill' + (s.credentialsPresent ? '' : ' bad');
-      c.textContent = s.credentialsPresent ? 'credentials.json found' : 'credentials.json missing';
+      c.textContent = s.credentialsPresent
+        ? (s.credentialsBundledInApp ? 'app ready' : 'credentials.json found')
+        : 'app not configured — contact the person who shared this zip';
       el.appendChild(c);
       const t = document.createElement('span');
       t.className = 'pill' + (s.tokenPresent ? '' : ' warn');
@@ -445,6 +535,13 @@
         el.textContent = s.credentialsPath;
       });
       applyApiFlags(s.apiEnabledFlags);
+      applyStepPanels(s);
+      if (s.cursorMcpConfigured) {
+        const cur = document.createElement('span');
+        cur.className = 'pill';
+        cur.textContent = 'Cursor connected';
+        el.appendChild(cur);
+      }
       const oe = document.getElementById('oauthErr');
       if (s.oauthLastError) {
         oe.style.display = 'block';

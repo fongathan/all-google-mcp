@@ -4,3 +4,9 @@ __pycache__/
 .ruff_cache/
 dist/
 .DS_Store
+
+# OAuth client secrets (publisher only — never commit)
+all_google_mcp/bundled_credentials.json
+packaging/credentials.json
+**/credentials.json
+!**/credentials.json.example

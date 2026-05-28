@@ -11,7 +11,12 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 
-from all_google_mcp.paths import credentials_path, ensure_support_dir, token_path
+from all_google_mcp.paths import (
+    credentials_path,
+    ensure_bundled_credentials,
+    ensure_support_dir,
+    token_path,
+)
 
 # One combined consent for Drive, Docs, Sheets, Slides, Gmail.
 SCOPES: list[str] = [
@@ -51,6 +56,7 @@ def _load_client_config(path: Path) -> dict[str, Any]:
 
 def run_oauth_flow() -> None:
     """Interactive browser OAuth; writes token.json."""
+    ensure_bundled_credentials()
     path = credentials_path()
     client_config = _load_client_config(path)
     ensure_support_dir()

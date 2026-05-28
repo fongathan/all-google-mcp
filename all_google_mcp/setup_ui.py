@@ -16,7 +16,14 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from all_google_mcp.paths import credentials_path, ensure_support_dir, support_dir, token_path
+from all_google_mcp.paths import (
+    bundled_credentials_sources,
+    credentials_path,
+    ensure_bundled_credentials,
+    ensure_support_dir,
+    support_dir,
+    token_path,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
@@ -151,14 +158,32 @@ def install_cursor_mcp_config() -> dict[str, object]:
     }
 
 
+def _cursor_has_all_google_mcp() -> bool:
+    path = _cursor_mcp_path()
+    if not path.is_file():
+        return False
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        servers = data.get("mcpServers")
+        if not isinstance(servers, dict):
+            return False
+        return "all-google-mcp" in servers
+    except Exception:
+        return False
+
+
 def _status() -> dict[str, Any]:
+    auto_installed = ensure_bundled_credentials()
     c = credentials_path()
     t = token_path()
     bundle = _bundle_stdio_executable()
+    bundled_sources = bundled_credentials_sources()
     st = {
         "supportDir": str(support_dir()),
         "credentialsPath": str(c),
         "credentialsPresent": c.is_file(),
+        "credentialsBundledInApp": len(bundled_sources) > 0,
+        "credentialsAutoInstalled": auto_installed is not None,
         "tokenPath": str(t),
         "tokenPresent": t.is_file(),
         "oauthRunning": bool(_auth_state["running"]),
@@ -170,6 +195,7 @@ def _status() -> dict[str, Any]:
         "cursorMcpPath": str(_cursor_mcp_path()),
         "usingBundledStdio": bundle is not None,
         "bundledStdioPath": str(bundle) if bundle else None,
+        "cursorMcpConfigured": _cursor_has_all_google_mcp(),
     }
     if t.is_file():
         try:
@@ -327,6 +353,7 @@ def _open_setup_url(url: str) -> None:
 
 def main() -> None:
     ensure_support_dir()
+    ensure_bundled_credentials()
     port = _free_port()
     server = HTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{port}/"
