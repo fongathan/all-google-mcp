@@ -1,14 +1,14 @@
 # All Google MCP
 
+**Please contact [Jonathan.Fong@disney.com](mailto:Jonathan.Fong@disney.com) for any help or questions.**
+
 Python [FastMCP](https://github.com/jlowin/fastmcp) server that talks to **Google Drive, Docs, Sheets, Slides, and Gmail** through the official Google APIs—no subprocess bridge.
 
 ## Install (macOS, team build)
 
-Download the latest macOS build (**v1.0.1**, no GitHub sign-in required):
+Download the latest app (**no GitHub sign-in required**):
 
-**[Releases → All-Google-MCP-mac-v1.0.1.zip](https://github.com/fongathan/all-google-mcp/releases/latest)**
-
-If you use an older **v1.0.0** link, **All-Google-MCP-mac.zip** on that release is the same portable Python build.
+**[Releases → All-Google-MCP-mac.zip](https://github.com/fongathan/all-google-mcp/releases/latest)**
 
 1. Unzip and drag **All Google MCP.app** into **Applications**.
 2. **Control-click → Open** on first launch (unsigned app).
