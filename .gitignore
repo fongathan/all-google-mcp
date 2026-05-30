@@ -5,6 +5,9 @@ __pycache__/
 dist/
 .DS_Store
 
+# Bundled CPython (created at app build time)
+.python/
+
 # OAuth client secrets (publisher only — never commit)
 all_google_mcp/bundled_credentials.json
 packaging/credentials.json
