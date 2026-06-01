@@ -320,7 +320,7 @@
       <div class="masthead-centered">
         <div class="title-block title-block--hero">
           <h1>All Google MCP</h1>
-          <p>Connect Drive, Docs, Sheets, Slides &amp; Gmail in Cursor — follow the steps below.</p>
+          <p>Connect Drive, Docs, Sheets, Slides &amp; Gmail in Cursor — complete setup below.</p>
         </div>
         <img src="/app_icon.png" alt="" class="brand-logo--hero" width="96" height="96" decoding="async" fetchpriority="high"/>
         <div class="status-line status-line--center" id="statusLine"></div>
@@ -340,17 +340,6 @@
 
     <div class="panel" id="panelStep1">
       <span class="step-badge">Step 1</span>
-      <h2>Install the app</h2>
-      <ol class="spaced compact">
-        <li>Unzip <strong>All Google MCP.zip</strong> if you have not already.</li>
-        <li>Drag <strong>All Google MCP.app</strong> into <strong>Applications</strong> (recommended).</li>
-        <li>Open <strong>All Google MCP</strong> from Applications. This setup page opens in your browser.</li>
-      </ol>
-      <p class="step-note">You can also run the app from the unzipped folder; using Applications keeps paths stable for Cursor.</p>
-    </div>
-
-    <div class="panel" id="panelStep2">
-      <span class="step-badge">Step 2</span>
       <h2>Sign in with Google</h2>
       <ol class="spaced compact">
         <li>Click <strong>Sign in with Google</strong> below.</li>
@@ -368,8 +357,8 @@
       <p id="oauthErr"></p>
     </div>
 
-    <div class="panel" id="panelStep3">
-      <span class="step-badge">Step 3</span>
+    <div class="panel" id="panelStep2">
+      <span class="step-badge">Step 2</span>
       <h2>Connect Cursor</h2>
       <ol class="spaced compact">
         <li>After you are signed in, click <strong>Add to Cursor</strong> below (updates <code>~/.cursor/mcp.json</code>).</li>
@@ -500,10 +489,8 @@
     function applyStepPanels(s) {
       const p1 = document.getElementById('panelStep1');
       const p2 = document.getElementById('panelStep2');
-      const p3 = document.getElementById('panelStep3');
-      if (p1) p1.classList.add('panel-done');
-      if (p2) p2.classList.toggle('panel-done', !!s.tokenPresent);
-      if (p3) p3.classList.toggle('panel-done', !!s.cursorMcpConfigured);
+      if (p1) p1.classList.toggle('panel-done', !!s.tokenPresent);
+      if (p2) p2.classList.toggle('panel-done', !!s.cursorMcpConfigured);
       const btnCursor = document.getElementById('btnInstallCursor');
       if (btnCursor) btnCursor.disabled = !s.tokenPresent;
       const note = document.getElementById('credNote');

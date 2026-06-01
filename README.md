@@ -8,14 +8,15 @@ Python [FastMCP](https://github.com/jlowin/fastmcp) server that talks to **Googl
 
 ## Install (macOS, team build)
 
-Download the latest app (**no GitHub sign-in required**):
+Download and install the app first (**no GitHub sign-in required**):
 
 **[Releases → All-Google-MCP-mac.zip](https://github.com/fongathan/all-google-mcp/releases/latest)**
 
 1. Unzip and drag **All Google MCP.app** into **Applications**.
 2. **Control-click → Open** on first launch (unsigned app).
-3. Open the app and follow the setup wizard: **Sign in with Google** → **Add to Cursor**.
-4. Quit Cursor completely (**⌘Q**), then reopen.
+3. Open the app — the setup wizard opens in your browser.
+
+Then in the wizard: **Sign in with Google** → **Add to Cursor** → quit Cursor (**⌘Q**) and reopen.
 
 You do **not** need your own Google Cloud project for the team build—the publisher’s OAuth app is bundled. Each person still signs in with **their own** Google account; sessions are stored as `token.json` on that Mac only.
 
