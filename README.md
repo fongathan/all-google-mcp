@@ -2,6 +2,8 @@
 
 **Please contact [Jonathan.Fong@disney.com](mailto:Jonathan.Fong@disney.com) for any help or questions.**
 
+** **NOTE:** since this is not an official app and I don't have a developer account, go to **System Settings**, **Privacy & Security**, and then click **"Open Anyway"** to get the app to launch" 
+
 Python [FastMCP](https://github.com/jlowin/fastmcp) server that talks to **Google Drive, Docs, Sheets, Slides, and Gmail** through the official Google APIs—no subprocess bridge.
 
 ## Install (macOS, team build)
