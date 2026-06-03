@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
+from all_google_mcp.app_info import check_for_updates, read_app_version
 from all_google_mcp.paths import (
     bundled_credentials_sources,
     credentials_path,
@@ -172,6 +173,50 @@ def _cursor_has_all_google_mcp() -> bool:
         return False
 
 
+def _operational_summary(st: dict[str, Any]) -> dict[str, Any]:
+    """Dashboard traffic-light states for the status panel."""
+    cred_ok = bool(st.get("credentialsPresent"))
+    token_ok = bool(st.get("tokenPresent"))
+    cursor_ok = bool(st.get("cursorMcpConfigured"))
+    oauth_busy = bool(st.get("oauthRunning"))
+    ready = cred_ok and token_ok and cursor_ok and not oauth_busy
+    if ready:
+        overall = "ok"
+        overall_label = "Ready for Cursor"
+        overall_detail = "Google is connected and Cursor MCP is configured."
+    elif not cred_ok:
+        overall = "bad"
+        overall_label = "App not configured"
+        overall_detail = "Missing OAuth client — contact the person who shared this app."
+    elif oauth_busy:
+        overall = "warn"
+        overall_label = "Signing in…"
+        overall_detail = "Complete the Google sign-in in your browser."
+    elif not token_ok:
+        overall = "warn"
+        overall_label = "Sign in required"
+        overall_detail = "Connect your Google account to use Drive, Docs, Sheets, Slides, and Gmail."
+    elif not cursor_ok:
+        overall = "warn"
+        overall_label = "Connect Cursor"
+        overall_detail = "Add All Google MCP to Cursor, then quit and reopen Cursor (⌘Q)."
+    else:
+        overall = "warn"
+        overall_label = "Setup incomplete"
+        overall_detail = "Finish the steps below."
+    return {
+        "overall": overall,
+        "overallLabel": overall_label,
+        "overallDetail": overall_detail,
+        "readyForWork": ready,
+        "signals": {
+            "app": "ok" if cred_ok else "bad",
+            "google": "warn" if oauth_busy else ("ok" if token_ok else "bad"),
+            "cursor": "ok" if cursor_ok else "warn",
+        },
+    }
+
+
 def _status() -> dict[str, Any]:
     auto_installed = ensure_bundled_credentials()
     c = credentials_path()
@@ -179,6 +224,7 @@ def _status() -> dict[str, Any]:
     bundle = _bundle_stdio_executable()
     bundled_sources = bundled_credentials_sources()
     st = {
+        "appVersion": read_app_version(),
         "supportDir": str(support_dir()),
         "credentialsPath": str(c),
         "credentialsPresent": c.is_file(),
@@ -203,6 +249,7 @@ def _status() -> dict[str, Any]:
             st["tokenHasRefresh"] = bool(raw.get("refresh_token"))
         except Exception:
             st["tokenHasRefresh"] = False
+    st.update(_operational_summary(st))
     return st
 
 
@@ -277,6 +324,10 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/api/status":
             self._json(_status())
+            return
+        if path == "/api/check-updates":
+            # SECURITY-REVIEW: outbound HTTPS to GitHub releases API (fixed host, no user-controlled URL).
+            self._json(check_for_updates())
             return
         self.send_error(404)
 
@@ -357,8 +408,8 @@ def main() -> None:
     port = _free_port()
     server = HTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{port}/"
-    print(f"All Google MCP setup: {url}", flush=True)
-    print("If nothing appears, paste that URL into your browser.", flush=True)
+    print(f"All Google MCP: {url}", flush=True)
+    print("Keep this window open while you work — status refreshes automatically.", flush=True)
     _open_setup_url(url)
     try:
         server.serve_forever()
