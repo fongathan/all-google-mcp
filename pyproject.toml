@@ -1,6 +1,6 @@
 [project]
 name = "all-google-mcp"
-version = "1.0.3"
+version = "1.0.4"
 description = "Unified Google MCP: Drive, Docs, Sheets, Slides, Gmail via official Google APIs (Python FastMCP)."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -9,6 +9,7 @@ dependencies = [
   "google-api-python-client>=2.160.0",
   "google-auth-httplib2>=0.2.0",
   "google-auth-oauthlib>=1.2.0",
+  "pywebview>=5.4",
 ]
 
 [project.scripts]

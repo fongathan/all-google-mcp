@@ -78,13 +78,12 @@ def _bundle_stdio_executable() -> Path | None:
         root = PROJECT_ROOT.resolve()
     except OSError:
         return None
-    if ".app" not in root.parts:
-        return None
-    idx = root.parts.index(".app")
-    base = Path(*root.parts[: idx + 1])
-    exe = base / "Contents" / "MacOS" / "AllGoogleMCPStdio"
-    if exe.is_file():
-        return exe
+    for i, part in enumerate(root.parts):
+        if part.endswith(".app"):
+            base = Path(*root.parts[: i + 1])
+            exe = base / "Contents" / "MacOS" / "AllGoogleMCPStdio"
+            if exe.is_file():
+                return exe
     return None
 
 
@@ -147,12 +146,14 @@ def install_cursor_mcp_config() -> dict[str, object]:
         return {"ok": False, "error": 'mcpServers must be an object; fix mcp.json manually.', "path": str(path)}
 
     merged_servers = dict(servers)
+    already = merged_servers.get("all-google-mcp") == entry
     merged_servers["all-google-mcp"] = entry
     data["mcpServers"] = merged_servers
 
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return {
         "ok": True,
+        "alreadyConfigured": already,
         "path": str(path),
         "backupPath": backup_path,
         "entry": entry,
@@ -385,11 +386,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def _open_setup_url(url: str) -> None:
-    """Open the setup page in the user's browser.
-
-    When the .app is launched from Finder, ``webbrowser.open`` often does nothing.
-    On macOS, ``open`` is reliable for http URLs.
-    """
+    """Fallback: open the setup page in the default browser."""
     if sys.platform == "darwin":
         try:
             subprocess.Popen(["open", url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -402,21 +399,65 @@ def _open_setup_url(url: str) -> None:
         pass
 
 
+def _open_native_window(url: str) -> bool:
+    """Show setup UI in a native macOS window (WKWebView via pywebview)."""
+    try:
+        import webview
+    except ImportError:
+        return False
+
+    icon = _app_icon_path()
+    kwargs: dict[str, object] = {
+        "title": "All Google MCP",
+        "url": url,
+        "width": 400,
+        "height": 760,
+        "min_size": (360, 540),
+        "resizable": True,
+        "background_color": "#0a0a0b",
+        "text_select": True,
+    }
+    if icon.is_file():
+        kwargs["icon"] = str(icon)
+
+    try:
+        webview.create_window(**kwargs)  # type: ignore[arg-type]
+        webview.start(debug=False)
+        return True
+    except Exception as e:
+        print(f"Native window unavailable: {e}", flush=True)
+        return False
+
+
+def _run_http_server(server: HTTPServer) -> None:
+    try:
+        server.serve_forever()
+    except Exception:
+        pass
+
+
 def main() -> None:
     ensure_support_dir()
     ensure_bundled_credentials()
     port = _free_port()
     server = HTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{port}/"
-    print(f"All Google MCP: {url}", flush=True)
-    print("Keep this window open while you work — status refreshes automatically.", flush=True)
-    _open_setup_url(url)
-    try:
-        server.serve_forever()
-    except KeyboardInterrupt:
-        pass
-    finally:
-        server.server_close()
+
+    server_thread = threading.Thread(target=_run_http_server, args=(server,), daemon=True)
+    server_thread.start()
+
+    opened_native = _open_native_window(url)
+    if not opened_native:
+        print(f"All Google MCP: {url}", flush=True)
+        print("Opening in your browser — keep this app running for live status.", flush=True)
+        _open_setup_url(url)
+        try:
+            server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+
+    server.shutdown()
+    server.server_close()
 
 
 if __name__ == "__main__":

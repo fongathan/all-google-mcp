@@ -1,5 +1,5 @@
 #!/bin/bash
-# Launcher: opens the All Google MCP setup overlay (local browser UI).
+# Launcher: opens the All Google MCP status panel (native window).
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 # shellcheck source=lib.sh
