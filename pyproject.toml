@@ -1,6 +1,6 @@
 [project]
 name = "all-google-mcp"
-version = "1.0.4"
+version = "1.0.5"
 description = "Unified Google MCP: Drive, Docs, Sheets, Slides, Gmail via official Google APIs (Python FastMCP)."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -25,3 +25,6 @@ packages = ["all_google_mcp"]
 [tool.hatch.build.targets.wheel.force-include]
 "all_google_mcp/setup_overlay.html" = "all_google_mcp/setup_overlay.html"
 "all_google_mcp/app_icon.png" = "all_google_mcp/app_icon.png"
+"all_google_mcp/sound_status.mp3" = "all_google_mcp/sound_status.mp3"
+"all_google_mcp/sound_signin.mp3" = "all_google_mcp/sound_signin.mp3"
+"all_google_mcp/sound_cursor.mp3" = "all_google_mcp/sound_cursor.mp3"

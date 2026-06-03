@@ -286,6 +286,81 @@ def _app_icon_path() -> Path:
     return Path(__file__).resolve().parent / "app_icon.png"
 
 
+_SOUND_FILES: dict[str, str] = {
+    "status": "sound_status.mp3",
+    "signin": "sound_signin.mp3",
+    "cursor": "sound_cursor.mp3",
+}
+
+_sound_lock = threading.Lock()
+_sound_processes: list[subprocess.Popen[bytes]] = []
+
+
+def _prune_sound_processes() -> None:
+    _sound_processes[:] = [proc for proc in _sound_processes if proc.poll() is None]
+
+
+def _stop_all_sounds() -> dict[str, object]:
+    """Terminate any in-progress afplay processes started by this app."""
+    stopped = 0
+    with _sound_lock:
+        _prune_sound_processes()
+        active = list(_sound_processes)
+        _sound_processes.clear()
+    for proc in active:
+        if proc.poll() is not None:
+            continue
+        try:
+            proc.terminate()
+            stopped += 1
+        except OSError:
+            pass
+    for proc in active:
+        if proc.poll() is not None:
+            continue
+        try:
+            proc.wait(timeout=0.05)
+        except subprocess.TimeoutExpired:
+            try:
+                proc.kill()
+            except OSError:
+                pass
+    return {"ok": True, "stopped": stopped}
+
+
+def _sound_path(sound: str) -> Path | None:
+    filename = _SOUND_FILES.get(sound)
+    if not filename:
+        return None
+    return Path(__file__).resolve().parent / filename
+
+
+def _play_sound(sound: str, *, volume: float = 1.0, muted: bool = False) -> dict[str, object]:
+    """Play a bundled UI sound via macOS afplay (works in WKWebView)."""
+    if muted or volume <= 0:
+        return {"ok": True, "sound": sound, "skipped": True}
+    path = _sound_path(sound)
+    if path is None:
+        return {"ok": False, "error": "Unknown sound."}
+    if not path.is_file():
+        return {"ok": False, "error": f"Sound file missing: {path.name}"}
+    vol = max(0.0, min(1.0, float(volume)))
+    if sys.platform == "darwin":
+        try:
+            proc = subprocess.Popen(
+                ["afplay", "-v", str(vol), str(path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            with _sound_lock:
+                _prune_sound_processes()
+                _sound_processes.append(proc)
+            return {"ok": True, "sound": sound, "volume": vol}
+        except OSError as e:
+            return {"ok": False, "error": str(e)}
+    return {"ok": False, "error": "Sound playback is macOS-only."}
+
+
 def _setup_page_html() -> str:
     p = Path(__file__).resolve().parent / "setup_overlay.html"
     return p.read_text(encoding="utf-8")
@@ -322,6 +397,16 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(200, icon.read_bytes(), "image/png")
             else:
                 self.send_error(404)
+            return
+        if path.startswith("/sounds/"):
+            name = path.rsplit("/", 1)[-1]
+            for key, filename in _SOUND_FILES.items():
+                if filename == name:
+                    sound_file = _sound_path(key)
+                    if sound_file and sound_file.is_file():
+                        self._send(200, sound_file.read_bytes(), "audio/mpeg")
+                        return
+            self.send_error(404)
             return
         if path == "/api/status":
             self._json(_status())
@@ -374,6 +459,27 @@ class Handler(BaseHTTPRequestHandler):
                 subprocess.Popen(["xdg-open", str(d)])
             self._json({"ok": True})
             return
+        if path == "/api/play-sound":
+            try:
+                body = json.loads(raw.decode("utf-8")) if raw else {}
+                sound = str(body.get("sound", "status")).lower().strip()
+                muted = bool(body.get("muted"))
+                try:
+                    volume = float(body.get("volume", 1.0))
+                except (TypeError, ValueError):
+                    volume = 1.0
+            except json.JSONDecodeError:
+                sound = "status"
+                muted = False
+                volume = 1.0
+            self._json(_play_sound(sound, volume=volume, muted=muted))
+            return
+        if path == "/api/stop-sounds":
+            self._json(_stop_all_sounds())
+            return
+        if path == "/api/play-laugh":
+            self._json(_play_sound("status"))
+            return
         if path == "/api/install-cursor-mcp":
             try:
                 result = install_cursor_mcp_config()
@@ -383,6 +489,45 @@ class Handler(BaseHTTPRequestHandler):
                 self._json({"ok": False, "error": str(e)}, 500)
             return
         self.send_error(404)
+
+
+def _running_in_app_bundle() -> bool:
+    try:
+        root = PROJECT_ROOT.resolve()
+        return any(part.endswith(".app") for part in root.parts)
+    except OSError:
+        return False
+
+
+def _wait_for_server(url: str, timeout: float = 5.0) -> bool:
+    """Poll until the local setup server accepts connections."""
+    import urllib.error
+    import urllib.request
+
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        try:
+            with urllib.request.urlopen(url, timeout=0.25) as resp:
+                if resp.status == 200:
+                    return True
+        except (urllib.error.URLError, OSError, TimeoutError):
+            time.sleep(0.05)
+    return False
+
+
+def _show_launch_error(message: str) -> None:
+    print(f"All Google MCP: {message}", flush=True)
+    if sys.platform == "darwin":
+        try:
+            safe = message.replace("\\", "\\\\").replace('"', '\\"')
+            subprocess.run(
+                ["osascript", "-e", f'display alert "All Google MCP" message "{safe}" as critical'],
+                check=False,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+        except OSError:
+            pass
 
 
 def _open_setup_url(url: str) -> None:
@@ -403,29 +548,32 @@ def _open_native_window(url: str) -> bool:
     """Show setup UI in a native macOS window (WKWebView via pywebview)."""
     try:
         import webview
-    except ImportError:
+    except ImportError as e:
+        _show_launch_error(f"Native window library missing: {e}")
         return False
 
-    icon = _app_icon_path()
-    kwargs: dict[str, object] = {
-        "title": "All Google MCP",
-        "url": url,
-        "width": 400,
-        "height": 760,
-        "min_size": (360, 540),
-        "resizable": True,
-        "background_color": "#0a0a0b",
-        "text_select": True,
-    }
-    if icon.is_file():
-        kwargs["icon"] = str(icon)
+    if not _wait_for_server(url):
+        _show_launch_error("Setup server did not start. Try quitting and reopening the app.")
+        return False
 
     try:
-        webview.create_window(**kwargs)  # type: ignore[arg-type]
-        webview.start(debug=False)
+        window = webview.create_window(
+            title="All Google MCP",
+            url=url,
+            width=420,
+            height=780,
+            min_size=(380, 560),
+            resizable=True,
+            background_color="#f8fbff",
+            text_select=True,
+            confirm_close=False,
+        )
+
+        gui = "cocoa" if sys.platform == "darwin" else None
+        webview.start(gui=gui, debug=False)
         return True
     except Exception as e:
-        print(f"Native window unavailable: {e}", flush=True)
+        _show_launch_error(f"Could not open the status panel: {e}")
         return False
 
 
@@ -448,13 +596,18 @@ def main() -> None:
 
     opened_native = _open_native_window(url)
     if not opened_native:
-        print(f"All Google MCP: {url}", flush=True)
-        print("Opening in your browser — keep this app running for live status.", flush=True)
-        _open_setup_url(url)
-        try:
-            server.serve_forever()
-        except KeyboardInterrupt:
-            pass
+        if _running_in_app_bundle():
+            _show_launch_error(
+                "The status panel could not open. Contact Jonathan.Fong@disney.com for help."
+            )
+        else:
+            print(f"All Google MCP: {url}", flush=True)
+            print("Native panel unavailable — opening in browser for development.", flush=True)
+            _open_setup_url(url)
+            try:
+                server.serve_forever()
+            except KeyboardInterrupt:
+                pass
 
     server.shutdown()
     server.server_close()

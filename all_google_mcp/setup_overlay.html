@@ -10,24 +10,26 @@
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
   <style>
     :root {
-      --bg: #0a0a0b;
-      --panel: #141416;
-      --row: #1a1a1e;
-      --border: rgba(255, 255, 255, 0.08);
-      --text: #f4f4f5;
-      --muted: #71717a;
-      --gold: #d4a853;
-      --green: #4ade80;
-      --warn: #fbbf24;
-      --bad: #f87171;
-      --cyan: #67e8f9;
+      --bg-top: #ffffff;
+      --bg-bottom: #dbeafe;
+      --panel: #ffffff;
+      --row: #f8fafc;
+      --border: rgba(15, 23, 42, 0.08);
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #2563eb;
+      --accent-soft: #eff6ff;
+      --green: #16a34a;
+      --warn: #d97706;
+      --bad: #dc2626;
+      --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 8px 24px rgba(37, 99, 235, 0.06);
     }
     * { box-sizing: border-box; }
     html, body {
       margin: 0;
       height: 100%;
       overflow: hidden;
-      background: var(--bg);
+      background: linear-gradient(180deg, var(--bg-top) 0%, #eef6ff 45%, var(--bg-bottom) 100%);
       color: var(--text);
       font-family: "Plus Jakarta Sans", system-ui, sans-serif;
       font-size: 13px;
@@ -39,32 +41,35 @@
       flex-direction: column;
       height: 100vh;
       max-height: 100vh;
+      border: 2px solid rgba(37, 99, 235, 0.45);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65);
     }
     .brand {
       text-align: center;
       padding: 1.35rem 1rem 0.85rem;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
     }
     .brand img {
       width: 56px;
       height: 56px;
       border-radius: 14px;
       border: 1px solid var(--border);
-      box-shadow: 0 0 24px rgba(212, 168, 83, 0.15);
+      box-shadow: var(--shadow);
     }
     .brand h1 {
       margin: 0.65rem 0 0.25rem;
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 800;
-      letter-spacing: 0.04em;
-      color: var(--gold);
+      letter-spacing: 0.06em;
+      color: var(--accent);
     }
     .brand .tagline {
       margin: 0;
       font-size: 0.78rem;
       color: var(--muted);
-      font-style: italic;
       min-height: 1.2em;
     }
     .scroll {
@@ -95,51 +100,61 @@
       display: flex;
       align-items: center;
       gap: 0.55rem;
-      padding: 0.55rem 0.6rem;
-      background: var(--row);
+      padding: 0.6rem 0.7rem;
+      background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 10px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.1s ease;
     }
-    .status-row.ok { border-color: rgba(74, 222, 128, 0.28); }
-    .status-row.warn { border-color: rgba(251, 191, 36, 0.28); }
-    .status-row.bad { border-color: rgba(248, 113, 113, 0.28); }
+    .status-row:hover { border-color: rgba(37, 99, 235, 0.28); }
+    .status-row:active { transform: scale(0.99); }
+    .status-row.ok { border-color: rgba(22, 163, 74, 0.25); background: #f0fdf4; }
+    .status-row.warn { border-color: rgba(217, 119, 6, 0.25); background: #fffbeb; }
+    .status-row.bad { border-color: rgba(220, 38, 38, 0.22); background: #fef2f2; }
     .dot {
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: #52525b;
+      background: #cbd5e1;
       flex-shrink: 0;
     }
-    .dot.ok { background: var(--green); box-shadow: 0 0 10px rgba(74, 222, 128, 0.65); }
-    .dot.warn { background: var(--warn); box-shadow: 0 0 8px rgba(251, 191, 36, 0.5); }
-    .dot.bad { background: var(--bad); box-shadow: 0 0 8px rgba(248, 113, 113, 0.5); }
+    .dot.ok { background: var(--green); box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15); }
+    .dot.warn { background: var(--warn); box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15); }
+    .dot.bad { background: var(--bad); box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12); }
     .row-text { flex: 1; min-width: 0; }
-    .row-title { font-weight: 700; font-size: 0.84rem; }
+    .row-title { font-weight: 700; font-size: 0.84rem; color: var(--text); }
     .row-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
     .overall-pill {
       text-align: center;
-      padding: 0.55rem 0.65rem;
-      border-radius: 10px;
+      padding: 0.6rem 0.75rem;
+      border-radius: 12px;
       border: 1px solid var(--border);
       background: var(--panel);
       margin-bottom: 0.85rem;
       font-size: 0.8rem;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: transform 0.1s ease;
     }
+    .overall-pill:active { transform: scale(0.99); }
     .overall-pill.ok {
-      border-color: rgba(74, 222, 128, 0.35);
-      background: rgba(74, 222, 128, 0.08);
-      color: var(--green);
+      border-color: rgba(22, 163, 74, 0.25);
+      background: #f0fdf4;
+      color: #166534;
     }
-    .overall-pill.warn { color: var(--warn); border-color: rgba(251, 191, 36, 0.3); }
-    .overall-pill.bad { color: var(--bad); border-color: rgba(248, 113, 113, 0.3); }
+    .overall-pill.warn { color: #92400e; border-color: rgba(217, 119, 6, 0.25); background: #fffbeb; }
+    .overall-pill.bad { color: #991b1b; border-color: rgba(220, 38, 38, 0.22); background: #fef2f2; }
     .panel {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 0.75rem 0.8rem;
+      border-radius: 12px;
+      padding: 0.8rem 0.85rem;
       margin-bottom: 0.55rem;
+      box-shadow: var(--shadow);
     }
-    .panel.done { border-color: rgba(74, 222, 128, 0.28); }
+    .panel.done { border-color: rgba(22, 163, 74, 0.28); }
     .step-head {
       display: flex;
       align-items: center;
@@ -152,16 +167,17 @@
       font-weight: 800;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--gold);
-      border: 1px solid rgba(212, 168, 83, 0.35);
+      color: var(--accent);
+      border: 1px solid rgba(37, 99, 235, 0.2);
       border-radius: 999px;
       padding: 0.15rem 0.45rem;
-      background: rgba(212, 168, 83, 0.08);
+      background: var(--accent-soft);
     }
     .panel h3 {
       margin: 0;
       font-size: 0.82rem;
       font-weight: 700;
+      color: var(--text);
     }
     .panel p, .panel li { font-size: 0.78rem; color: var(--muted); margin: 0.25rem 0; }
     .panel ol { margin: 0.25rem 0 0 1rem; padding: 0; }
@@ -174,23 +190,26 @@
       font-family: inherit;
       font-weight: 600;
       font-size: 0.76rem;
-      padding: 0.42rem 0.75rem;
+      padding: 0.45rem 0.8rem;
       border-radius: 999px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
     }
+    .btn:active { transform: scale(0.98); }
     .btn-primary {
-      background: linear-gradient(135deg, #d4a853, #b8862d);
-      color: #0a0a0b;
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.25);
     }
-    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
     .btn-ghost {
-      background: var(--row);
+      background: #ffffff;
       color: var(--text);
       border: 1px solid var(--border);
     }
     .btn-danger {
-      background: rgba(248, 113, 113, 0.1);
-      color: #fecaca;
-      border: 1px solid rgba(248, 113, 113, 0.3);
+      background: #fff1f2;
+      color: #be123c;
+      border: 1px solid rgba(220, 38, 38, 0.18);
     }
     .action-msg {
       margin-top: 0.45rem;
@@ -198,13 +217,14 @@
       min-height: 1.1em;
     }
     .action-msg.ok { color: var(--green); }
-    .action-msg.err { color: #fecaca; }
+    .action-msg.err { color: var(--bad); }
     .help-line {
       font-size: 0.72rem;
       color: var(--muted);
       margin-bottom: 0.65rem;
     }
-    .help-line a { color: var(--cyan); }
+    .help-line a { color: var(--accent); text-decoration: none; }
+    .help-line a:hover { text-decoration: underline; }
     .advanced-toggle-wrap {
       margin: 0.35rem 0 0.55rem;
       text-align: center;
@@ -228,6 +248,7 @@
       padding: 0.45rem;
       word-break: break-all;
       margin: 0.35rem 0;
+      color: #334155;
     }
     .foot {
       flex-shrink: 0;
@@ -240,18 +261,26 @@
       border-top: 1px solid var(--border);
       font-size: 0.68rem;
       color: var(--muted);
-      background: var(--panel);
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(8px);
     }
-    .foot-btns { display: flex; gap: 0.35rem; }
+    .foot-btns { display: flex; gap: 0.35rem; flex-wrap: wrap; }
     .foot .btn { font-size: 0.68rem; padding: 0.3rem 0.55rem; }
-    #oauthErr { color: #fecaca; font-size: 0.74rem; margin-top: 0.35rem; display: none; }
+    .sound-controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+    #btnMute.is-muted { color: var(--muted); border-style: dashed; }
+    #oauthErr { color: var(--bad); font-size: 0.74rem; margin-top: 0.35rem; display: none; }
   </style>
 </head>
 <body>
   <div class="shell">
     <header class="brand">
       <img src="/app_icon.png" alt="" width="56" height="56"/>
-      <h1>ALL GOOGLE MCP</h1>
+      <h1>All Google MCP</h1>
       <p class="tagline" id="tagline">Checking status…</p>
     </header>
 
@@ -348,6 +377,9 @@
 
     <footer class="foot">
       <span id="footVersion">v…</span>
+      <div class="sound-controls">
+        <button type="button" class="btn btn-ghost" id="btnMute" aria-pressed="false" aria-label="Mute sounds">Mute Sounds</button>
+      </div>
       <span id="footSummary">—</span>
       <div class="foot-btns">
         <button type="button" class="btn btn-ghost" id="btnCheckUpdates">Updates</button>
@@ -364,7 +396,56 @@
       warn: 'Almost there — finish the steps below.',
       bad: 'Setup needed before Cursor can use Google.',
     };
+    const SOUND_MUTE_KEY = 'allGoogleMcp.soundMuted';
     let refreshTimer = null;
+    let soundMuted = localStorage.getItem(SOUND_MUTE_KEY) === '1';
+
+    function stopAllSounds() {
+      return fetch('/api/stop-sounds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      }).catch(() => {});
+    }
+
+    function playSound(sound) {
+      if (soundMuted) return;
+      void fetch('/api/play-sound', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sound: sound, muted: soundMuted }),
+      });
+    }
+
+    function updateSoundControls() {
+      const btn = document.getElementById('btnMute');
+      btn.textContent = soundMuted ? 'Unmute Sounds' : 'Mute Sounds';
+      btn.classList.toggle('is-muted', soundMuted);
+      btn.setAttribute('aria-pressed', soundMuted ? 'true' : 'false');
+      btn.setAttribute('aria-label', soundMuted ? 'Unmute sounds' : 'Mute sounds');
+    }
+
+    function wireSoundControls() {
+      const btn = document.getElementById('btnMute');
+      updateSoundControls();
+      btn.addEventListener('click', async () => {
+        const willMute = !soundMuted;
+        if (willMute) {
+          await stopAllSounds();
+        }
+        soundMuted = willMute;
+        localStorage.setItem(SOUND_MUTE_KEY, soundMuted ? '1' : '0');
+        updateSoundControls();
+      });
+    }
+
+    function wireClickSounds() {
+      document.querySelectorAll('.status-row, .overall-pill').forEach((el) => {
+        el.addEventListener('click', () => playSound('status'));
+      });
+      document.getElementById('btnOAuth').addEventListener('click', () => playSound('signin'));
+      document.getElementById('btnInstallCursor').addEventListener('click', () => playSound('cursor'));
+    }
 
     async function fetchJson(path, opts) {
       const r = await fetch(path, Object.assign({ headers: { 'Content-Type': 'application/json' } }, opts || {}));
@@ -531,6 +612,8 @@
     };
 
     refresh();
+    wireSoundControls();
+    wireClickSounds();
     refreshTimer = setInterval(refresh, 30000);
   </script>
 </body>
