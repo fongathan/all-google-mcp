@@ -1,6 +1,6 @@
 [project]
 name = "all-google-mcp"
-version = "1.0.6"
+version = "1.0.7"
 description = "Unified Google MCP: Drive, Docs, Sheets, Slides, Gmail via official Google APIs (Python FastMCP)."
 readme = "README.md"
 requires-python = ">=3.11"
