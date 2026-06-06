@@ -90,8 +90,16 @@ def _bundle_stdio_executable() -> Path | None:
 def _mcp_server_config() -> dict[str, object]:
     bundle_stdio = _bundle_stdio_executable()
     if bundle_stdio is not None:
+        exe = str(bundle_stdio)
+        # Cursor spawn breaks on spaces in command paths — wrap with /bin/sh.
+        if " " in exe:
+            return {
+                "command": "/bin/sh",
+                "args": [exe],
+                "env": {},
+            }
         return {
-            "command": str(bundle_stdio),
+            "command": exe,
             "args": [],
             "env": {},
         }
